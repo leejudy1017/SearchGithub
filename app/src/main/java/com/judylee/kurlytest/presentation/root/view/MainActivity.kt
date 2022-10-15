@@ -85,7 +85,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                                         setHasFixedSize(true)
                                         layoutManager = listManager
                                         adapter = listAdapter
-딩                                    }
+                                    }
                                 }
                             }
 
