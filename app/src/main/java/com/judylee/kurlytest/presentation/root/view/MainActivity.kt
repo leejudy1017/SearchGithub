@@ -1,7 +1,10 @@
 package com.judylee.kurlytest.presentation.root.view
 
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.util.Log
+import android.view.View
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
 import android.widget.SearchView
@@ -62,6 +65,14 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                                 } else {
                                     var listManager = LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
                                     var listAdapter = response.body()?.let { RepositoryAdapter(applicationContext, text, it) }
+                                    listAdapter?.setItemClickListener(object : RepositoryAdapter.ItemClickListener {
+                                        override fun onClick(view: View, position: Int) {
+                                            // item 클릭 시 해당 리포지토리로 연
+                                            val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(response.body()?.items?.get(position)?.htmlUrl))
+                                            startActivity(webIntent)
+                                        }
+                                    })
+
                                     var recyclerList = binding.recyclerView.apply {
                                         setHasFixedSize(true)
                                         layoutManager = listManager
@@ -72,6 +83,8 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
 
                             override fun onFailure(call: Call<SearchGithubResponse>, t: Throwable) {
                                 Log.i("fail", t.toString())
+                                // 안내문구 (데이터를 받아오지 못했을 때)
+                                Toast.makeText(applicationContext, "서버에서 데이터를 가져오지 못했습니다.\n네트워크를 확인해주세요.", Toast.LENGTH_SHORT).show()
                             }
 
                         })

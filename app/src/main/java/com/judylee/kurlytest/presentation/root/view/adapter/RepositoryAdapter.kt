@@ -17,6 +17,15 @@ import com.judylee.kurlytest.data.network.dto.SearchGithubResponse
 
 class RepositoryAdapter(var context : Context, var searchText : String, var data : SearchGithubResponse) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
 
+    interface ItemClickListener {
+        fun onClick(view: View, position: Int)
+    }
+    private lateinit var itemClickListener: ItemClickListener
+
+    fun setItemClickListener(itemClickListener: ItemClickListener) {
+        this.itemClickListener = itemClickListener
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         var view = LayoutInflater.from(parent.context).inflate(R.layout.github_item, parent, false)
         return ViewHolder(view)
@@ -44,6 +53,7 @@ class RepositoryAdapter(var context : Context, var searchText : String, var data
 
         holder.itemView.setOnClickListener {
             //Todo : 링크 연결
+            itemClickListener.onClick(it,position)
         }
 
     }
