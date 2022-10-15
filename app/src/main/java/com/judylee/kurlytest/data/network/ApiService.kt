@@ -8,6 +8,6 @@ import retrofit2.http.Query
 interface ApiService {
 
     @GET("search/repositories")
-    fun getGitHubRepositories(@Query("q") query: String) : Call<SearchGithubResponse>
+    fun getGitHubRepositories(@Query("q") query: String, @Query("page") page : Int) : Call<SearchGithubResponse>
 
 }

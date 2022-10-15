@@ -14,7 +14,7 @@ import com.judylee.kurlytest.R
 import com.judylee.kurlytest.data.network.dto.SearchGithubResponse
 
 
-class RepositoryAdapter(var context : Context, var searchText : String, var data : SearchGithubResponse) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
+class RepositoryAdapter(var context : Context, var searchText : String, var data : SearchGithubResponse, var totalCount : Int, var page : Int) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
 
     interface ItemClickListener {
         fun onClick(view: View, position: Int)
@@ -79,7 +79,19 @@ class RepositoryAdapter(var context : Context, var searchText : String, var data
     }
 
     override fun getItemCount(): Int {
-       return data.totalCount
+        return if(page==1){
+            if( totalCount >= 30 ){
+                30
+            } else{
+                totalCount
+            }
+        } else{
+            if((totalCount - 30*(page-1))>=30){
+                30
+            } else{
+                (totalCount - 30*(page-1))
+            }
+        }
     }
 
     class ViewHolder(v: View): RecyclerView.ViewHolder(v){
