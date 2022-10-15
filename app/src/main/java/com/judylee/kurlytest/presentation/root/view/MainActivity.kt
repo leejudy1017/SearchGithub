@@ -19,6 +19,7 @@ import com.judylee.kurlytest.databinding.ActivityMainBinding
 import com.judylee.kurlytest.presentation.base.BaseActivity
 import com.judylee.kurlytest.presentation.root.view.adapter.RepositoryAdapter
 import com.judylee.kurlytest.presentation.root.viewModel.MainViewModel
+import com.judylee.kurlytest.util.LoadingDialog
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -39,18 +40,24 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
 
     override fun setupViews() {
 
+        // 서버 호출하는 동안 로딩 다이얼로그 띄우도록 함
+        var dialog = LoadingDialog()
+
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(text: String?): Boolean {
+
                 // 키보드 내리고 searchView 포커싱 없애기
                 hideKeyboard()
                 binding.searchView.clearFocus()
+
                 if (text != null) {
                     if (text.isNotEmpty()) {
                         Log.i("text", text)
-                        //Todo: 네트워크 확인
-                        //Todo: 로딩스피너
+
                         val call: Call<SearchGithubResponse> =
                             RetrofitApi.apiService.getGitHubRepositories(text)
+
+                        dialog.show(supportFragmentManager,"")
                         call.enqueue(object : Callback<SearchGithubResponse> {
                             override fun onResponse(
                                 call: Call<SearchGithubResponse>,
@@ -59,6 +66,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                                 Log.i("success", response.body()?.items.toString())
                                 Log.i("success", response.body()?.totalCount.toString())
 
+                                dialog.dismiss()
                                 if (response.body()?.totalCount == 0) {
                                     // 안내문구 (검색 정보가 없을 때)
                                     Toast.makeText(applicationContext, "검색된 리포지토리가 없습니다.", Toast.LENGTH_SHORT).show()
@@ -67,7 +75,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                                     var listAdapter = response.body()?.let { RepositoryAdapter(applicationContext, text, it) }
                                     listAdapter?.setItemClickListener(object : RepositoryAdapter.ItemClickListener {
                                         override fun onClick(view: View, position: Int) {
-                                            // item 클릭 시 해당 리포지토리로 연
+                                            // item 클릭 시 해당 리포지토리 링크 연결
                                             val webIntent = Intent(Intent.ACTION_VIEW, Uri.parse(response.body()?.items?.get(position)?.htmlUrl))
                                             startActivity(webIntent)
                                         }
@@ -77,12 +85,13 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                                         setHasFixedSize(true)
                                         layoutManager = listManager
                                         adapter = listAdapter
-                                    }
+딩                                    }
                                 }
                             }
 
                             override fun onFailure(call: Call<SearchGithubResponse>, t: Throwable) {
                                 Log.i("fail", t.toString())
+                                dialog.dismiss()
                                 // 안내문구 (데이터를 받아오지 못했을 때)
                                 Toast.makeText(applicationContext, "서버에서 데이터를 가져오지 못했습니다.\n네트워크를 확인해주세요.", Toast.LENGTH_SHORT).show()
                             }

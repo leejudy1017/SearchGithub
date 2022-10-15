@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
+import com.judylee.kurlytest.util.LoadingDialog
 
 abstract class BaseActivity<T : ViewDataBinding>(
     @LayoutRes private val contentLayoutId: Int
@@ -19,7 +20,8 @@ abstract class BaseActivity<T : ViewDataBinding>(
     private var _binding: T? = null
     val binding: T
         get() = _binding!!
-    var foldable = false
+
+    lateinit var mLoadingDialog: LoadingDialog
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -34,10 +36,7 @@ abstract class BaseActivity<T : ViewDataBinding>(
         // 상태바 텍스트 색 변경(상태바 배경색에 따라 흰/검)
         // API 30 기준으로 구분
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            WindowInsetsControllerCompat(
-                window,
-                LayoutInflater.from(this).inflate(contentLayoutId, null)
-            ).isAppearanceLightStatusBars = true
+            WindowInsetsControllerCompat(window, LayoutInflater.from(this).inflate(contentLayoutId, null)).isAppearanceLightStatusBars = true
         } else {
             window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
         }

@@ -52,7 +52,6 @@ class RepositoryAdapter(var context : Context, var searchText : String, var data
         holder.tvStarCount.text = data.items[position].stargazersCount.toString()
 
         holder.itemView.setOnClickListener {
-            //Todo : 링크 연결
             itemClickListener.onClick(it,position)
         }
 
