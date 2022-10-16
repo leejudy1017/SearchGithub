@@ -93,16 +93,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
             override fun onScrollStateChanged(recyclerView: RecyclerView, newState: Int) {
                 super.onScrollStateChanged(recyclerView, newState)
 
-                val lastVisibleItemPosition = (recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition()
-                val totalItemViewCount = recyclerView.adapter!!.itemCount-1
+                //스크롤이 필요한 경우
+                if(totalCount > 30 * currentPage){
+                    val lastVisibleItemPosition = (recyclerView.layoutManager as LinearLayoutManager?)!!.findLastCompletelyVisibleItemPosition()
+                    val totalItemViewCount = recyclerView.adapter!!.itemCount-1
 
-                // 키보드 내리고 searchView 포커싱 없애기
-                hideKeyboard()
-                binding.searchView.clearFocus()
+                    // 키보드 내리고 searchView 포커싱 없애기
+                    hideKeyboard()
+                    binding.searchView.clearFocus()
 
-                if(newState == 2 && !recyclerView.canScrollVertically(1) && lastVisibleItemPosition == totalItemViewCount){
-                    currentPage += 1
-                    getGitHubRepositoriesApi()
+                    if(newState == 2 && !recyclerView.canScrollVertically(1) && lastVisibleItemPosition == totalItemViewCount){
+                        currentPage += 1
+                        getGitHubRepositoriesApi()
+                    }
                 }
 
             }
