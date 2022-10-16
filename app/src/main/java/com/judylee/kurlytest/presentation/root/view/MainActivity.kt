@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.judylee.kurlytest.R
 import com.judylee.kurlytest.data.network.RetrofitApi
+import com.judylee.kurlytest.data.network.dto.GithubRepositoryResponse
 import com.judylee.kurlytest.data.network.dto.SearchGithubResponse
 import com.judylee.kurlytest.databinding.ActivityMainBinding
 import com.judylee.kurlytest.presentation.base.BaseActivity
@@ -29,9 +30,10 @@ import retrofit2.Response
 class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
 
     var currentPage = 1
-    var maxPage = 0
     var totalCount = 0
     var searchText = ""
+    var githubRepositoryResponse = mutableListOf<GithubRepositoryResponse>()
+    lateinit var listAdapter : RepositoryAdapter
 
     private val mainVM: MainViewModel by lazy {
         ViewModelProvider(this)[MainViewModel::class.java]
@@ -43,10 +45,19 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
 
     override fun setup() {
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        listAdapter = RepositoryAdapter(applicationContext, searchText, githubRepositoryResponse, totalCount, currentPage)
     }
 
     @RequiresApi(Build.VERSION_CODES.M)
     override fun setupViews() {
+
+        binding.recyclerView.adapter = listAdapter
+        var listManager = LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
+        binding.recyclerView.apply {
+            setHasFixedSize(true)
+            layoutManager = listManager
+            adapter = listAdapter
+        }
 
         binding.searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(text: String?): Boolean {
@@ -58,8 +69,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                 if (text != null) {
                     if (text.isNotEmpty()) {
                         searchText = text
+                        currentPage = 1
+                        githubRepositoryResponse.clear()
+                        listAdapter.notifyDataSetChanged()
                         getGitHubRepositoriesApi()
-
                     }
                     else {
                         // 안내문구 (키보드 입력) : length = 0
@@ -122,27 +135,20 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                 response: Response<SearchGithubResponse>
             ) {
                 if (response.isSuccessful) {
-                    Log.i("success", response.body()?.items.toString())
-                    Log.i("success", response.body()?.totalCount.toString())
+
                     totalCount = response.body()?.totalCount!!
-                    maxPage = totalCount / 30 + 1
 
                     dialog.dismiss()
                     if (response.body()?.totalCount == 0) {
                         // 안내문구 (검색 정보가 없을 때)
                         Toast.makeText(applicationContext, "검색된 리포지토리가 없습니다.", Toast.LENGTH_SHORT).show()
                     } else {
-                        var listManager =
-                            LinearLayoutManager(applicationContext, RecyclerView.VERTICAL, false)
-                        var listAdapter = response.body()?.let {
-                            RepositoryAdapter(
-                                applicationContext,
-                                searchText,
-                                it,
-                                totalCount,
-                                currentPage
-                            )
+
+                        for (items in response.body()?.items!!) {
+                            githubRepositoryResponse.add(items)
                         }
+
+                        listAdapter.notifyDataSetChanged()
                         listAdapter?.setItemClickListener(object :
                             RepositoryAdapter.ItemClickListener {
                             override fun onClick(view: View, position: Int) {
@@ -165,11 +171,6 @@ class MainActivity : BaseActivity<ActivityMainBinding>(R.layout.activity_main) {
                             }
                         })
 
-                        var recyclerList = binding.recyclerView.apply {
-                            setHasFixedSize(true)
-                            layoutManager = listManager
-                            adapter = listAdapter
-                        }
                     }
                 }
                 else{

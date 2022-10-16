@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
-import com.judylee.kurlytest.util.LoadingDialog
 
 abstract class BaseActivity<T : ViewDataBinding>(
     @LayoutRes private val contentLayoutId: Int
@@ -20,8 +19,6 @@ abstract class BaseActivity<T : ViewDataBinding>(
     private var _binding: T? = null
     val binding: T
         get() = _binding!!
-
-    lateinit var mLoadingDialog: LoadingDialog
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onCreate(savedInstanceState: Bundle?) {

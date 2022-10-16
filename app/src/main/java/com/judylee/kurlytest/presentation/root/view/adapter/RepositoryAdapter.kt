@@ -2,6 +2,7 @@ package com.judylee.kurlytest.presentation.root.view.adapter
 
 import android.content.Context
 import android.text.Html
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +12,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import com.judylee.kurlytest.R
+import com.judylee.kurlytest.data.network.dto.GithubRepositoryResponse
 import com.judylee.kurlytest.data.network.dto.SearchGithubResponse
 
 
-class RepositoryAdapter(var context : Context, var searchText : String, var data : SearchGithubResponse, var totalCount : Int, var page : Int) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
+class RepositoryAdapter(var context : Context, var searchText : String, var data : List<GithubRepositoryResponse>, var totalCount : Int, var page : Int) : RecyclerView.Adapter<RepositoryAdapter.ViewHolder>() {
 
     interface ItemClickListener {
         fun onClick(view: View, position: Int)
@@ -33,44 +35,15 @@ class RepositoryAdapter(var context : Context, var searchText : String, var data
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
 
         Glide.with(context)
-            .load(data.items[position].owner.avatarUrl)
+            .load(data[position].owner.avatarUrl)
             .diskCacheStrategy(DiskCacheStrategy.NONE)
             .fitCenter()
             .circleCrop()
             .into(holder.ivUser)
 
-
-        //searchText 와 동일한 부분 Bold 처리
-        if(containText(data.items[position].fullName,searchText) == Pair(0,0)){
-            holder.tvTitle.text = data.items[position].fullName
-        }
-        else{
-            var firstIndex = containText(data.items[position].fullName,searchText).first
-            var lastIndex = containText(data.items[position].fullName,searchText).second
-            val substr = data.items[position].fullName.substring(firstIndex, lastIndex+1)
-            val sourceString = data.items[position].fullName.split(substr)[0]+"<b>" + substr + "</b> " + data.items[position].fullName.split(substr)[1]
-            holder.tvTitle.text = Html.fromHtml(sourceString)
-        }
-
-
-        if(data.items[position].description == null || data.items[position].description == ""){
-            holder.tvDescription.visibility = View.GONE
-        }
-        else{
-            holder.tvDescription.visibility = View.VISIBLE
-            if(containText(data.items[position].description,searchText) == Pair(0,0)){
-                holder.tvDescription.text = data.items[position].description
-            }
-            else{
-                var firstIndex = containText(data.items[position].description,searchText).first
-                var lastIndex = containText(data.items[position].description,searchText).second
-                val substr = data.items[position].description.substring(firstIndex, lastIndex+1)
-                val sourceString = data.items[position].description.split(substr)[0]+"<b>" + substr + "</b> " + data.items[position].description.split(substr)[1]
-                holder.tvDescription.text = Html.fromHtml(sourceString)
-            }
-        }
-
-        holder.tvStarCount.text = data.items[position].stargazersCount.toString()
+        holder.tvTitle.text = data[position].fullName
+        holder.tvDescription.text = data[position].description
+        holder.tvStarCount.text = data[position].stargazersCount.toString()
 
         holder.itemView.setOnClickListener {
             itemClickListener.onClick(it,position)
@@ -79,19 +52,8 @@ class RepositoryAdapter(var context : Context, var searchText : String, var data
     }
 
     override fun getItemCount(): Int {
-        return if(page==1){
-            if( totalCount >= 30 ){
-                30
-            } else{
-                totalCount
-            }
-        } else{
-            if((totalCount - 30*(page-1))>=30){
-                30
-            } else{
-                (totalCount - 30*(page-1))
-            }
-        }
+
+        return data.size
     }
 
     class ViewHolder(v: View): RecyclerView.ViewHolder(v){
